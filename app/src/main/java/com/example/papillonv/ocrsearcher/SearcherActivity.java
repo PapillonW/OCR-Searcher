@@ -1,6 +1,7 @@
 package com.example.papillonv.ocrsearcher;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,7 +30,8 @@ public class SearcherActivity extends AppCompatActivity {
     public ImageView imageView;
     public Button takePictureButton;
 
-    @SuppressLint("WrongViewCast")
+    private Uri imageUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,27 +45,33 @@ public class SearcherActivity extends AppCompatActivity {
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.TITLE, "OCR_Image");
+                values.put(MediaStore.Images.Media.DESCRIPTION, "OCR Image From your Camera");
+                imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(intent,0);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(intent, 0);
             }
         });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            super.onActivityResult(requestCode, resultCode, data);
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            imageView.setImageBitmap(bitmap);
 
-        Bitmap bitmap = (Bitmap)data.getExtras().get("data");
-        imageView.setImageBitmap(bitmap);
-
-        OCRReader();
+            OCRReader(bitmap);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
-    public void OCRReader()
+    public void OCRReader(Bitmap bitmap)
     {
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getApplicationContext().getResources(),R.id.imageView);
 
         TextRecognizer textRecognizer = new  TextRecognizer.Builder(getApplicationContext()).build();
 
@@ -78,12 +86,11 @@ public class SearcherActivity extends AppCompatActivity {
             SparseArray<TextBlock> items = textRecognizer.detect(frame);
 
             StringBuilder stringBuilder = new StringBuilder();
-
             for (int i = 0; i < items.size(); i++)
             {
                 TextBlock myItem = items.valueAt(i);
                 stringBuilder.append(myItem.getValue());
-                stringBuilder.append("\n");
+                stringBuilder.append(" \n");
             }
 
             String[] str = stringBuilder.toString().split("[?]",1);
