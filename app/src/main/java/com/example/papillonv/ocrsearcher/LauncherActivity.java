@@ -13,8 +13,8 @@ import android.widget.Toast;
 public class LauncherActivity extends AppCompatActivity {
 
     public final static int CAMERA_PERMISSION = 100;
-    public final static int EXTERNAL_READ_PERMISSION = 101;
-    public final static int EXTERNAL_WRITE_PERMISSION = 102;
+    /*public final static int EXTERNAL_READ_PERMISSION = 101;
+    public final static int EXTERNAL_WRITE_PERMISSION = 102;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +46,18 @@ public class LauncherActivity extends AppCompatActivity {
               {
                 if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                 {
-                  Toast.makeText(this, "İzin Verildi!", Toast.LENGTH_SHORT).show();
+                   if (checkSelfPermission(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED)
+                   {
+                       Toast.makeText(this, "İzin Verildi!", Toast.LENGTH_SHORT).show();
 
-                  Intent intent = new Intent(getApplicationContext(),SearcherActivity.class);
-                  startActivity(intent);
-                  finish();
+                       Intent intent = new Intent(getApplicationContext(),SearcherActivity.class);
+                       startActivity(intent);
+                       finish();
+                   }
+                   else
+                   {
+                       requestPermissions(new String[]{Manifest.permission.INTERNET},3);
+                   }
                 }
                 else
                 {

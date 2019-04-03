@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,10 +29,11 @@ import com.google.android.gms.vision.text.TextRecognizer;
 public class SearcherActivity extends AppCompatActivity {
 
     public TextView textView;
-    public ImageView imageView;
+    //public ImageView imageView;
     public Button takePictureButton;
-
+    public WebView webView;
     private Uri imageUri;
+    public String text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +41,10 @@ public class SearcherActivity extends AppCompatActivity {
         setContentView(R.layout.activity_seacrher);
 
 
-        textView =  findViewById(R.id.textView);
-        imageView = findViewById(R.id.imageView);
+        //textView =  findViewById(R.id.textView);
+        //imageView = findViewById(R.id.imageView);
         takePictureButton = findViewById(R.id.button);
+        webView = findViewById(R.id.webView);
 
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +65,7 @@ public class SearcherActivity extends AppCompatActivity {
         try {
             super.onActivityResult(requestCode, resultCode, data);
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-            imageView.setImageBitmap(bitmap);
+            //imageView.setImageBitmap(bitmap);
 
             OCRReader(bitmap);
         } catch(Exception e) {
@@ -93,11 +97,12 @@ public class SearcherActivity extends AppCompatActivity {
                 stringBuilder.append(" \n");
             }
 
-            String[] str = stringBuilder.toString().split("[?]",1);
+            String str = stringBuilder.toString();
+            String[] strArray = str.split("\\?(?!\\?)");
 
-            String a = str[0];
-            textView.setText(a);
-
+            String a = strArray[0];
+            //textView.setText(a);
+            text = a;
             SearchText();
         }
 
@@ -106,6 +111,11 @@ public class SearcherActivity extends AppCompatActivity {
     public void SearchText()
     {
         Intent intent = getPackageManager().getLaunchIntentForPackage("com.android.chrome");
-        startActivity(new Intent (Intent.ACTION_VIEW,Uri.parse("https://www.google.com/#q=" + textView.getText())));
+        startActivity(new Intent (Intent.ACTION_VIEW,Uri.parse("https://www.google.com/#q=" + text)));
+
+        /*Intent intent = new Intent(getApplicationContext(),SearcherActivity.class);
+        startActivity(intent);
+        webView.setWebViewClient(new WebViewClient());
+        webView.loadUrl("https://www.google.com/#q="/* + textView.getText());*/
     }
 }
